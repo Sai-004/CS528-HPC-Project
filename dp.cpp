@@ -1,83 +1,89 @@
 #include <iostream>
 #include <vector>
-#include <cmath>
+#include <cstring>
 using namespace std;
 
-const int MAX_EDGE_SERVERS = 100;
-const int MAX_TIME_SLOTS = 24;
+const int MAX_SERVERS = 105;
+const int MAX_TIMESLOTS = 25;
 
-int M, T; // Number of edge servers and time slots
-int S[MAX_EDGE_SERVERS][MAX_TIME_SLOTS]; // Solar panel capacity
-int D[MAX_EDGE_SERVERS][MAX_TIME_SLOTS]; // Task arrivals
-int dp[MAX_EDGE_SERVERS][MAX_TIME_SLOTS][MAX_EDGE_SERVERS * MAX_TIME_SLOTS]; // DP table
+int S[MAX_SERVERS][MAX_TIMESLOTS]; // Solar panel capacity
+int D[MAX_SERVERS][MAX_TIMESLOTS]; // Number of tasks arriving
+int Task_arrived[MAX_TIMESLOTS]; // Task arrival per timeslot
+int memo[MAX_SERVERS][MAX_TIMESLOTS];
 
-// Function to maximize the total number of task executions
-int maximizeTasks() {
-    // Initialize DP table
-    for (int i = 0; i < M; ++i) {
-        for (int j = 0; j < T; ++j) {
-            for (int k = 0; k <= T * M; ++k) {
-                dp[i][j][k] = -1;
-            }
+int T; // Number of time slots
+int M; // Number of edge servers
+
+int dp(int server, int time, vector<int> battery, int remaining_tasks) {
+
+    if (time >= T)
+        return 0;
+    if(server==M)
+    {
+        int result = dp(0, time + 1, battery, remaining_tasks);
+        //cout << "Returned from dp: server = " << server << ", time = " << time << ", remaining_tasks = " << remaining_tasks << ", result = " << result << endl;
+        return result;
+    }
+    if(server == 0)
+    {
+        for (int i = 0; i < MAX_SERVERS;i++)
+        {
+            battery[i]+=S[i][time];
         }
+        remaining_tasks = Task_arrived[time];
     }
-
-    // Base case: If no tasks, return 0
-    for (int i = 0; i < M; ++i) {
-        if (D[i][0] == 0) dp[i][0][0] = 0;
+    if (remaining_tasks == 0)
+    {
+        int result = dp(0, time + 1, battery, remaining_tasks);
+        //cout << "Returned from dp: server = " << server << ", time = " << time << ", remaining_tasks = " << remaining_tasks << ", result = " << result << endl;
+        return result;
     }
-
-    // Dynamic Programming
-    for (int j = 0; j < T - 1; ++j) {
-        for (int i = 0; i < M; ++i) {
-            for (int k = 0; k <= T * M; ++k) {
-                if (dp[i][j][k] == -1) continue;
-
-                // Option 1: Execute current task
-                if (k + pow(D[i][j], 3) <= S[i][j]) {
-                    dp[i][j + 1][k + pow(D[i][j], 3)] = max(dp[i][j + 1][k + pow(D[i][j], 3)], dp[i][j][k] + 1);
-                }
-
-                // Option 2: Do not execute current task
-                dp[i][j + 1][k] = max(dp[i][j + 1][k], dp[i][j][k]);
-
-                // Option 3: Use stored power
-                if (k >= pow(D[i][j], 3)) {
-                    dp[i][j + 1][k - pow(D[i][j], 3)] = max(dp[i][j + 1][k - pow(D[i][j], 3)], dp[i][j][k]);
-                }
-            }
-        }
+    
+    //cout << "Debug: server = " << server << ", time = " << time << ", remaining_tasks = " << remaining_tasks << endl;
+    int max_tasks = 0;
+    for (int i = 0; i <= remaining_tasks; ++i)
+    {
+        int consumed_power = i * i * i;
+        if (consumed_power > battery[server]) // If consumed power exceeds available power
+            break;
+        
+        battery[server] -= consumed_power;
+        int temp_remaining_tasks = remaining_tasks - i;
+        max_tasks = max(max_tasks, i + dp(server+1, time,battery,temp_remaining_tasks));
+        battery[server] += consumed_power;
     }
-
-    // Find maximum tasks executed across all edge servers at the last time slot
-    int maxTasks = 0;
-    for (int i = 0; i < M; ++i) {
-        maxTasks = max(maxTasks, dp[i][T - 1][0]);
-    }
-
-    return maxTasks;
+    //cout << "Returned from dp: server = " << server << ", time = " << time << ", remaining_tasks = " << remaining_tasks << ", max_tasks = " << max_tasks << endl;
+    return max_tasks;
 }
 
 int main() {
-    // Input number of edge servers and time slots
-    cin >> M >> T;
+    // Input S, D, T, M
+    // For simplicity, assume the inputs are read
+    cout << "Enter the number of edge servers: ";
+    cin >> M;
+    cout << "Enter the number of time slots per day: ";
+    cin >> T;
 
-    // Input solar panel capacity
+    // Input solar power generation and task arrival for each server and time slot
+    cout << "Enter solar power generation and task arrival for each server and time slot:\n";
     for (int i = 0; i < M; ++i) {
         for (int j = 0; j < T; ++j) {
-            cin >> S[i][j];
+            cin >> S[i][j] >> D[i][j];
         }
     }
 
-    // Input task arrivals
-    for (int i = 0; i < M; ++i) {
-        for (int j = 0; j < T; ++j) {
-            cin >> D[i][j];
+    for (int i = 0; i < T; i++)
+    {
+        for (int j = 0; j < M; j++)
+        {
+            Task_arrived[i] += D[j][i];
         }
     }
+    //memset(memo, -1, sizeof(memo));
+    vector<int> battery(MAX_SERVERS,0); // Battery capacity at each server
 
-    // Calculate and output the maximum number of tasks executed
-    cout << maximizeTasks() << endl;
-
+    int max_tasks = dp(0, 0, battery, 1); // Start from the first server and first time slot
+    cout << "Max number of tasks executed: " << max_tasks << endl;
+    
     return 0;
 }
