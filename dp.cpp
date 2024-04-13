@@ -2,6 +2,7 @@
 #include <vector>
 #include <map>
 #include <cstring>
+#include <cmath>
 using namespace std;
 
 const int MAX_SERVERS = 105;
@@ -13,6 +14,7 @@ int Task_arrived[MAX_TIMESLOTS];    // Task arrival per timeslot
 
 int T; // Number of time slots
 int M; // Number of edge servers
+int Smax; //Max energy that can be generated in one time slot per server
 
 int dp(int server, int time, vector<int> battery, int remaining_tasks, map<tuple<int, int, vector<int>, int>, int>& memo) {
 
@@ -61,7 +63,8 @@ int main() {
     cin >> M;
     cout << "Enter the number of time slots per day: ";
     cin >> T;
-
+    cout << "Enter maximum solar power that can be generated in each time slot, in each server: ";
+    cin >> Smax;
     cout << "Enter solar power generation and task arrival for each server and time slot:\n";
     for (int i = 0; i < M; ++i) {
         for (int j = 0; j < T; ++j) {
@@ -71,6 +74,10 @@ int main() {
 
     for (int i = 0; i < T; i++) {
         for (int j = 0; j < M; j++) {
+            //as only limited amount of battery can be generated max number of tasks that can be executed in any
+            //time slot is given below.If more than that number of tasks arrive, rest of the taks can be ignored 
+            //as they will never be scheduled any way.
+            if((Task_arrived[i]+D[j][i])>(M*pow(T*Smax,1.0/3.0))) break;
             Task_arrived[i] += D[j][i];
         }
     }
