@@ -135,6 +135,14 @@ int greedy(vector<int> task_arrived, vector<vector<int>> S)
             }
             cout << endl;
         }
+
+        for(int j=0;j<T;j++)
+        {
+            for(int i=0;i<M;i++)
+            {
+                cumulative_S[i][j]=min(cumulative_S[i][j],cumulative_S[i][j]-previousStagesEnergyUtilisations[i]);
+            }
+        }
     }
 
     // Calculate total number of tasks executed from tasksActuallyExecuted
