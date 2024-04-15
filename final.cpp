@@ -87,7 +87,7 @@ int greedy(vector<int> task_arrived, vector<vector<int>> S)
             {
                 for (int i = 0; i < M; i++)
                 {
-                    cumulative_S[i][j] = min(cumulative_S[i][j], cumulative_S[i][j] - previousStagesEnergyUtilisations[i]);
+                    //cumulative_S[i][j] = min(cumulative_S[i][j], cumulative_S[i][j] - previousStagesEnergyUtilisations[i]);
                     previousStagesEnergyUtilisations[i] = 0;
                 }
             }
@@ -116,7 +116,13 @@ int greedy(vector<int> task_arrived, vector<vector<int>> S)
                     if (task_arrived[j] > 0 && (cumulative_S[i][j] - (pow((tasksActuallyExecuted[i][j] + 1), 3) - pow(tasksActuallyExecuted[i][j], 3))) >= 0)
                     {
                         task_arrived[j]--;
-                        cumulative_S[i][j] -= (pow((tasksActuallyExecuted[i][j] + 1), 3) - pow(tasksActuallyExecuted[i][j], 3));
+                        int p=j;
+                        int leftAfterUtilisation=cumulative_S[i][j] - (pow((tasksActuallyExecuted[i][j] + 1), 3) - pow(tasksActuallyExecuted[i][j], 3));
+                        while(p>=0 && cumulative_S[i][p]>=leftAfterUtilisation)
+                        {
+                            cumulative_S[i][p]=leftAfterUtilisation;//previous stages also should reflect the current utilisations in energy, if their energy was used
+                            p--;
+                        }
                         previousStagesEnergyUtilisations[i] += (pow((tasksActuallyExecuted[i][j] + 1), 3) - pow(tasksActuallyExecuted[i][j], 3));
                         tasksActuallyExecuted[i][j]++;
                         isAtleastOneExecutionDone = true;
@@ -124,23 +130,6 @@ int greedy(vector<int> task_arrived, vector<vector<int>> S)
                     else if (task_arrived[j] == 0)
                         break;
                 }
-            }
-        }
-        cout << "Tasks Actually Executed:\n";
-        for (int i = 0; i < M; i++)
-        {
-            for (int j = 0; j < T; j++)
-            {
-                cout << cumulative_S[i][j] << " ";
-            }
-            cout << endl;
-        }
-
-        for(int j=0;j<T;j++)
-        {
-            for(int i=0;i<M;i++)
-            {
-                cumulative_S[i][j]=min(cumulative_S[i][j],cumulative_S[i][j]-previousStagesEnergyUtilisations[i]);
             }
         }
     }
