@@ -117,7 +117,7 @@ int greedy(vector<int> task_arrived, vector<vector<int>> S)
                     {
                         task_arrived[j]--;
                         int p=j;
-                        int leftAfterUtilisation=cumulative_S[i][j] - (pow((tasksActuallyExecuted[i][j] + 1), 3) - pow(tasksActuallyExecuted[i][j], 3));
+                        int leftAfterUtilisation=cumulative_S[i][j] - (pow((tasksActuallyExecuted[i][j] + 1), 3) - pow(tasksActuallyExecuted[i][j], 3)); //energy left after utilisation
                         while(p>=0 && cumulative_S[i][p]>=leftAfterUtilisation)
                         {
                             cumulative_S[i][p]=leftAfterUtilisation;//previous stages also should reflect the current utilisations in energy, if their energy was used
