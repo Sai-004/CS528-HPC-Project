@@ -57,9 +57,12 @@ int greedy(vector<int> task_arrived, vector<vector<int>> S)
     int prevSteps;
     int value;
     int leftAfterUtilisation;
+    int cnt=1;
     // Loop until no task can be executed in any time slot
     while (isAtleastOneExecutionDone)
     {
+        cout<<"Iteration:"<<cnt<<endl;
+        cnt++;
         isAtleastOneExecutionDone = false;
         // Iterate over each time slot
         for (int j = 0; j < T; j++)
@@ -112,6 +115,15 @@ int greedy(vector<int> task_arrived, vector<vector<int>> S)
                     else if (task_arrived[j] == 0)
                         break;
                 }
+            }
+            cout << "Cumulative Solar Power after time slot "<<j<<endl;
+            for (int i = 0; i < M; i++)
+            {
+                for (int j = 0; j < T; j++)
+                {
+                    cout << cumulative_S[i][j] << " ";
+                }
+                cout << endl;
             }
         }
     }
