@@ -9,9 +9,11 @@ This project focuses on task scheduling optimization in edge server systems equi
 
 Given M edge servers with solar panels of capacity S and infinite batteries, the task is to schedule tasks arriving at different time slots of the day to maximize task execution. Each time slot has a certain amount of solar power generation and a number of tasks arriving at each edge server. The power consumed in a time slot is based on the cube of the number of tasks executed. The task can be executed in the same time slot or stored for later execution. 
 
-### Approach
+### Brute Force Approach
 
 The solution is implemented using Dynamic Programming (DP). The `dp` function recursively computes the maximum number of tasks that can be executed starting from a particular edge server and time slot, considering the available battery power and remaining tasks. Memoization is used to optimize computation by storing already computed results.
+
+### Approach used was mentioned in the Report
 
 ### Usage
 
@@ -29,13 +31,13 @@ The solution is implemented using Dynamic Programming (DP). The `dp` function re
 2. Compile the code:
 
     ```bash
-    g++ -o task_scheduler task_scheduler.cpp
+    g++ -o final final.cpp
     ```
 
 3. Run the program:
 
     ```bash
-    ./task_scheduler
+    ./final
     ```
 
 ### Example

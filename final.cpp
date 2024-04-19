@@ -36,15 +36,15 @@ int greedy(vector<int> task_arrived, vector<vector<int>> S)
         }
     }
 
-    cout << "Cumulative Solar Power:\n";
-    for (int i = 0; i < M; i++)
-    {
-        for (int j = 0; j < T; j++)
-        {
-            cout << cumulative_S[i][j] << " ";
-        }
-        cout << endl;
-    }
+    // cout << "Cumulative Solar Power:\n";
+    // for (int i = 0; i < M; i++)
+    // {
+    //     for (int j = 0; j < T; j++)
+    //     {
+    //         cout << cumulative_S[i][j] << " ";
+    //     }
+    //     cout << endl;
+    // }
 
     // Flag to check if at least one execution is done in each iteration
     bool isAtleastOneExecutionDone = true;
@@ -54,31 +54,13 @@ int greedy(vector<int> task_arrived, vector<vector<int>> S)
 
     // Matrix to store the number of tasks actually executed by each server in each time slot
     vector<vector<int>> tasksActuallyExecuted(M, vector<int>(T, 0));
-
+    int prevSteps;
+    int value;
+    int leftAfterUtilisation;
     // Loop until no task can be executed in any time slot
     while (isAtleastOneExecutionDone)
     {
         isAtleastOneExecutionDone = false;
-
-        vector<int> min_cummulativeSum(M, 0);
-        for (int i = 0; i < M; i++)
-        {
-            for (int j = 0; j < T; j++)
-            {
-                if (j == 0)
-                {
-                    min_cummulativeSum[i] = cumulative_S[i][j];
-                }
-                else
-                {
-                    if (cumulative_S[i][j] < min_cummulativeSum[i])
-                    {
-                        min_cummulativeSum[i] = cumulative_S[i][j];
-                    }
-                }
-            }
-        }
-
         // Iterate over each time slot
         for (int j = 0; j < T; j++)
         {
@@ -87,7 +69,6 @@ int greedy(vector<int> task_arrived, vector<vector<int>> S)
             {
                 for (int i = 0; i < M; i++)
                 {
-                    //cumulative_S[i][j] = min(cumulative_S[i][j], cumulative_S[i][j] - previousStagesEnergyUtilisations[i]);
                     previousStagesEnergyUtilisations[i] = 0;
                 }
             }
@@ -95,15 +76,16 @@ int greedy(vector<int> task_arrived, vector<vector<int>> S)
             // Iterate over each server in each time slot
             for (int i = 0; i < M; i++)
             {
+                value=(pow((tasksActuallyExecuted[i][j] + 1), 3) - pow(tasksActuallyExecuted[i][j], 3));
                 // For the first time slot
                 if (j == 0)
                 {
                     // Check if there are tasks arrived and there is enough energy to execute the task
-                    if (task_arrived[j] > 0 && cumulative_S[i][j] - (pow((tasksActuallyExecuted[i][j] + 1), 3) - pow(tasksActuallyExecuted[i][j], 3)) >= 0)
+                    if (task_arrived[j] > 0 && cumulative_S[i][j] - value >= 0)
                     {
                         task_arrived[j]--;
-                        cumulative_S[i][j] -= (pow((tasksActuallyExecuted[i][j] + 1), 3) - pow(tasksActuallyExecuted[i][j], 3));
-                        previousStagesEnergyUtilisations[i] = (pow((tasksActuallyExecuted[i][j] + 1), 3) - pow(tasksActuallyExecuted[i][j], 3));
+                        cumulative_S[i][j] -= value;
+                        previousStagesEnergyUtilisations[i] = value;
                         tasksActuallyExecuted[i][j]++;
                         isAtleastOneExecutionDone = true;
                     }
@@ -113,17 +95,17 @@ int greedy(vector<int> task_arrived, vector<vector<int>> S)
                 else
                 {
                     cumulative_S[i][j] -= previousStagesEnergyUtilisations[i];
-                    if (task_arrived[j] > 0 && (cumulative_S[i][j] - (pow((tasksActuallyExecuted[i][j] + 1), 3) - pow(tasksActuallyExecuted[i][j], 3))) >= 0)
+                    if (task_arrived[j] > 0 && (cumulative_S[i][j] - value) >= 0)
                     {
                         task_arrived[j]--;
-                        int p=j;
-                        int leftAfterUtilisation=cumulative_S[i][j] - (pow((tasksActuallyExecuted[i][j] + 1), 3) - pow(tasksActuallyExecuted[i][j], 3)); //energy left after utilisation
-                        while(p>=0 && cumulative_S[i][p]>=leftAfterUtilisation)
+                        prevSteps=j;
+                        leftAfterUtilisation=cumulative_S[i][j] - value; //energy left after utilisation
+                        while(prevSteps>=0 && cumulative_S[i][prevSteps]>=leftAfterUtilisation)
                         {
-                            cumulative_S[i][p]=leftAfterUtilisation;//previous stages also should reflect the current utilisations in energy, if their energy was used
-                            p--;
+                            cumulative_S[i][prevSteps]=leftAfterUtilisation;//previous stages also should reflect the current utilisations in energy, if their energy was used
+                            prevSteps--;
                         }
-                        previousStagesEnergyUtilisations[i] += (pow((tasksActuallyExecuted[i][j] + 1), 3) - pow(tasksActuallyExecuted[i][j], 3));
+                        previousStagesEnergyUtilisations[i] += value;
                         tasksActuallyExecuted[i][j]++;
                         isAtleastOneExecutionDone = true;
                     }
@@ -133,11 +115,12 @@ int greedy(vector<int> task_arrived, vector<vector<int>> S)
             }
         }
     }
-
     // Calculate total number of tasks executed from tasksActuallyExecuted
     int final_tasks = 0;
+    cout<<"Tasks executed in all time steps across all servers:"<<endl;
     for (int j = 0; j < T; j++)
     {
+        cout<<"Timestep: "<<j << ": ";
         for (int i = 0; i < M; i++)
         {
             final_tasks += tasksActuallyExecuted[i][j];
@@ -152,7 +135,6 @@ int greedy(vector<int> task_arrived, vector<vector<int>> S)
 void generateRandomTest()
 {
     srand(time(0)); // Seed for random number generation
-
     // Generate random number of edge servers, time slots, and max solar power per time slot per server
     M = rand() % MAX_SERVERS + 1;                // Random number of edge servers between 1 and 20
     T = rand() % MAX_TIMESLOTS + 1;              // Random number of time slots between 1 and 100
@@ -161,7 +143,6 @@ void generateRandomTest()
     vector<vector<int>> D(M, vector<int>(T, 0)); // Number of tasks arriving
     vector<int> Task_arrived(T, 0);              // Task arrival per timeslot
     cout << "Edge Servers: " << M << ", Time Slots: " << T << ", Max Solar Power: " << Smax << endl;
-
     // Generate random solar power generation and task arrival for each server and time slot
     for (int i = 0; i < M; ++i)
     {
@@ -172,7 +153,6 @@ void generateRandomTest()
             cout << "Server " << i + 1 << ", Time Slot " << j + 1 << ": Solar Power " << S[i][j] << ", Tasks " << D[i][j] << endl;
         }
     }
-
     // Calculate total number of tasks arriving in each time slot
     for (int i = 0; i < T; i++)
     {
@@ -181,28 +161,27 @@ void generateRandomTest()
             Task_arrived[i] += D[j][i];
         }
     }
-
     // Call greedy algorithm function and display the result
     int greedy_max_tasks = greedy(Task_arrived, S);
     cout << "Final max greedy Tasks: " << greedy_max_tasks << "\n";
 }
-
-// Main function
-// int main()
-// {
-//     generateRandomTest(); // Generate random test scenario
-//     return 0;
-// }
-
 int main()
 {
+    string isRandom;
+    cout<<"Do you want random test cases to be checked?(Y/N)"<<endl;
+    cin>>isRandom;
+    if(isRandom=="Y")
+    {
+        generateRandomTest(); 
+        return 0;
+    }
     cout << "Enter the number of edge servers: ";
     cin >> M;
     cout << "Enter the number of time slots per day: ";
     cin >> T;
     cout << "Enter maximum solar power that can be generated in each time slot, in each server: ";
     cin >> Smax;
-    cout << "Enter solar power generation and task arrival for each server and time slot:\n";
+    cout << "Enter solar power generation for each server and time slot:\n";
     vector<vector<int>> S(M, vector<int>(T, 0)); // Solar panel capacity
     vector<vector<int>> D(M, vector<int>(T, 0)); // Number of tasks arriving
     vector<int> Task_arrived(T, 0);              // Task arrival per timeslot
@@ -210,7 +189,15 @@ int main()
     {
         for (int j = 0; j < T; ++j)
         {
-            cin >> S[i][j] >> D[i][j];
+            cin >> S[i][j] ;
+        }
+    }
+    cout << "Enter tasks generated for each server and time slot:\n";
+    for (int i = 0; i < M; ++i)
+    {
+        for (int j = 0; j < T; ++j)
+        {
+            cin >> D[i][j] ;
         }
     }
 
@@ -218,7 +205,6 @@ int main()
     {
         for (int j = 0; j < M; j++)
         {
-            // if((Task_arrived[i]+D[j][i])>(M*pow(T*Smax,1.0/3.0))) break;
             Task_arrived[i] += D[j][i];
         }
     }
