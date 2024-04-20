@@ -16,14 +16,14 @@ int T;    // Number of time slots
 int M;    // Number of edge servers
 int Smax; // Max energy that can be generated in one time slot per server
 
-int dp(int server, int time, vector<int> battery, int remaining_tasks)
+int bf(int server, int time, vector<int> battery, int remaining_tasks)
 {
 
     if (time >= T)
         return 0;
     if (server == M)
     {
-        int result = dp(0, time + 1, battery, remaining_tasks);
+        int result = bf(0, time + 1, battery, remaining_tasks);
         return result;
     }
     if (server == 0)
@@ -36,7 +36,7 @@ int dp(int server, int time, vector<int> battery, int remaining_tasks)
     }
     if (remaining_tasks == 0)
     {
-        int result = dp(0, time + 1, battery, remaining_tasks);
+        int result = bf(0, time + 1, battery, remaining_tasks);
         return result;
     }
 
@@ -49,7 +49,7 @@ int dp(int server, int time, vector<int> battery, int remaining_tasks)
 
         battery[server] -= consumed_power;
         int temp_remaining_tasks = remaining_tasks - i;
-        max_tasks = max(max_tasks, i + dp(server + 1, time, battery, temp_remaining_tasks));
+        max_tasks = max(max_tasks, i + bf(server + 1, time, battery, temp_remaining_tasks));
         battery[server] += consumed_power;
     }
 
@@ -88,7 +88,7 @@ int main()
 
     vector<int> battery(MAX_SERVERS, 0);
 
-    int max_tasks = dp(0, 0, battery, 1);
+    int max_tasks = bf(0, 0, battery, 1);
     cout << "Max number of tasks executed: " << max_tasks << endl;
 
     return 0;
