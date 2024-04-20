@@ -57,19 +57,19 @@ int greedy(vector<int> task_arrived, vector<vector<int>> S)
     int prevSteps;
     int value;
     int leftAfterUtilisation;
-    int cnt=1;
+    int cnt = 1;
     // Loop until no task can be executed in any time slot
     while (isAtleastOneExecutionDone)
     {
-        cout<<"Iteration:"<<cnt<<endl;
+        cout << "Iteration:" << cnt << endl;
         cnt++;
         isAtleastOneExecutionDone = false;
         // Iterate over each time slot
         for (int j = 0; j < T; j++)
         {
-            // Reset previous stage energy utilizations at the beginning of each time slot
             if (j == 0)
             {
+                // Reset previous stage energy utilizations at the beginning of each time slot
                 for (int i = 0; i < M; i++)
                 {
                     previousStagesEnergyUtilisations[i] = 0;
@@ -79,7 +79,9 @@ int greedy(vector<int> task_arrived, vector<vector<int>> S)
             // Iterate over each server in each time slot
             for (int i = 0; i < M; i++)
             {
-                value=(pow((tasksActuallyExecuted[i][j] + 1), 3) - pow(tasksActuallyExecuted[i][j], 3));
+                // Calculate the value of energy required for the task based on tasksActuallyExecuted
+                value = (pow((tasksActuallyExecuted[i][j] + 1), 3) - pow(tasksActuallyExecuted[i][j], 3));
+
                 // For the first time slot
                 if (j == 0)
                 {
@@ -97,26 +99,35 @@ int greedy(vector<int> task_arrived, vector<vector<int>> S)
                 }
                 else
                 {
+                    // Adjust the cumulative solar power for the current time slot based on previous energy utilizations
                     cumulative_S[i][j] -= previousStagesEnergyUtilisations[i];
+
+                    // Check if there are tasks arrived and there is enough energy to execute the task
                     if (task_arrived[j] > 0 && (cumulative_S[i][j] - value) >= 0)
                     {
                         task_arrived[j]--;
-                        prevSteps=j;
-                        leftAfterUtilisation=cumulative_S[i][j] - value; //energy left after utilisation
-                        while(prevSteps>=0 && cumulative_S[i][prevSteps]>=leftAfterUtilisation)
+                        prevSteps = j;
+                        leftAfterUtilisation = cumulative_S[i][j] - value; // Energy left after utilization
+
+                        // Update the cumulative solar power for previous stages if their energy was used
+                        while (prevSteps >= 0 && cumulative_S[i][prevSteps] >= leftAfterUtilisation)
                         {
-                            cumulative_S[i][prevSteps]=leftAfterUtilisation;//previous stages also should reflect the current utilisations in energy, if their energy was used
+                            cumulative_S[i][prevSteps]=leftAfterUtilisation; //previous stages also should reflect the current utilisations in energy, if their energy was used
                             prevSteps--;
                         }
+
+                        // Update energy utilizations for the current time slot and mark task execution
                         previousStagesEnergyUtilisations[i] += value;
                         tasksActuallyExecuted[i][j]++;
                         isAtleastOneExecutionDone = true;
                     }
                     else if (task_arrived[j] == 0)
-                        break;
+                        break; // No tasks left to be executed so go to the next time step
                 }
             }
-            cout << "Cumulative Solar Power after time slot "<<j<<endl;
+
+            // Output cumulative solar power after each time slot for debugging purposes
+            cout << "Cumulative Solar Power after time slot " << j << endl;
             for (int i = 0; i < M; i++)
             {
                 for (int j = 0; j < T; j++)
@@ -129,10 +140,10 @@ int greedy(vector<int> task_arrived, vector<vector<int>> S)
     }
     // Calculate total number of tasks executed from tasksActuallyExecuted
     int final_tasks = 0;
-    cout<<"Tasks executed in all time steps across all servers:"<<endl;
+    cout << "Tasks executed in all time steps across all servers:" << endl;
     for (int j = 0; j < T; j++)
     {
-        cout<<"Timestep: "<<j << ": ";
+        cout << "Timestep: " << j << ": ";
         for (int i = 0; i < M; i++)
         {
             final_tasks += tasksActuallyExecuted[i][j];
@@ -177,14 +188,15 @@ void generateRandomTest()
     int greedy_max_tasks = greedy(Task_arrived, S);
     cout << "Final max greedy Tasks: " << greedy_max_tasks << "\n";
 }
+
 int main()
 {
     string isRandom;
-    cout<<"Do you want random test cases to be checked?(Y/N)"<<endl;
-    cin>>isRandom;
-    if(isRandom=="Y")
+    cout << "Do you want random test cases to be checked?(Y/N)" << endl;
+    cin >> isRandom;
+    if (isRandom == "Y")
     {
-        generateRandomTest(); 
+        generateRandomTest();
         return 0;
     }
     cout << "Enter the number of edge servers: ";
@@ -201,7 +213,7 @@ int main()
     {
         for (int j = 0; j < T; ++j)
         {
-            cin >> S[i][j] ;
+            cin >> S[i][j];
         }
     }
     cout << "Enter tasks generated for each server and time slot:\n";
@@ -209,7 +221,7 @@ int main()
     {
         for (int j = 0; j < T; ++j)
         {
-            cin >> D[i][j] ;
+            cin >> D[i][j];
         }
     }
 
